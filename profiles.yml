@@ -1,0 +1,38 @@
+# Optional rules for cdp_intf_config.py (--profiles profiles.yml)
+#
+# First matching rule wins. Match keys are case-insensitive regexes and ALL
+# supplied keys must match:  platform, capabilities, hostname, local_intf
+# Optional 'os' limits a rule to cisco_ios / cisco_xe / cisco_nxos / cisco_xr.
+#
+# 'description' (optional) overrides --desc-format for matched ports.
+# 'config' lines are added under the interface. They can use neighbour fields:
+#   {remote_host} {remote_intf} {platform} {capabilities} {mgmt_ip} {native_vlan}
+
+rules:
+  - name: ip-phone
+    capabilities: "Phone"
+    config:
+      - switchport mode access
+      - switchport voice vlan 20
+      - spanning-tree portfast
+
+  - name: access-point
+    platform: "AIR-|C91[0-9]{2}AX"
+    config:
+      - switchport mode trunk
+      - switchport trunk native vlan 30
+      - switchport trunk allowed vlan 30,100-110
+
+  - name: nexus-uplink
+    os: cisco_nxos
+    platform: "N[3579]K"
+    config:
+      - switchport mode trunk
+      - "switchport trunk native vlan {native_vlan}"
+
+  - name: router-p2p
+    os: [cisco_ios, cisco_xe, cisco_nxos]   # no 'switchport' on IOS-XR
+    capabilities: "Router"
+    platform: "ASR|ISR|NCS|C8[0-9]{3}"
+    config:
+      - no switchport
